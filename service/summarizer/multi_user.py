@@ -22,7 +22,7 @@ class MultiUserSummaryManager:
     def __init__(self, token_limit=250, temperature=0.0):
         self.token_limit = token_limit
         self.temperature = temperature
-        self.sql = MySQLManager()
+        self.sql = MySQLManager(False)
         
         # 紀錄每個 user 的對話buffer: user_id -> ConversationBuffer
         self.user_buffers = {}

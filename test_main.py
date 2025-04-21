@@ -6,7 +6,7 @@ load_dotenv()
 # 今晚吃牛丼好嗎
 
 def main():
-    sql = db.MySQLManager()
+    sql = db.MySQLManager(False)
     while True:
         uid = "'test0001'"
         message_id = "'00000000001'"
