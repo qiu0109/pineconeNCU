@@ -15,7 +15,7 @@ class ModuleManager():
 
     def __init__(self):
         # 資料庫連線
-        self.sql = db.MySQLManager(True)
+        self.sql = db.MySQLManager(False)
 
         # 意圖分析
         self.intention = it.Intention()
@@ -116,7 +116,7 @@ class ModuleManager():
         # 單次生成回應 (不再多次檢查ReplyChecker)
         phase1_response = self.phase1.generate_final_prompt(
             user_input=user_input,
-            context=[intent_discript],
+            context=intent_discript,
             history=history,
             check_result=None,
             ph1_emotion_tone=None
@@ -124,10 +124,10 @@ class ModuleManager():
         print(f"\nAI 回應: {phase1_response}")
 
         # 可視需要進行 split_message 或 str 改寫
-        answer = phase1_response
+        answer = [phase1_response]
 
         # 處理 bot 端摘要
-        bot_summary = self.summary_manager.add_message(user_id=uid, role="bot", message=answer, memory=topics)
+        bot_summary = self.summary_manager.add_message(user_id=uid, role="bot", message=phase1_response, memory=topics)
         if bot_summary is not None:
             sum2 = bot_summary['summary']
             self.memory_manager.store_memory(user_id=uid, text=sum2, importance=0.5, frequency=1 )
@@ -239,10 +239,7 @@ class ModuleManager():
 
 
 if __name__ == "__main__":
-    try:
-        print("🔧 啟動 ModuleManager 中...")
-        mm = ModuleManager()
-        print("✅ 初始化完成，進入主循環")
-        mm.main()
-    except Exception as e:
-        print(f"❌ 啟動時發生錯誤：{e}")
+    print("🔧 啟動 ModuleManager 中...")
+    mm = ModuleManager()
+    print("✅ 初始化完成，進入主循環")
+    mm.main()

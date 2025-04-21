@@ -19,9 +19,8 @@ class MultiUserSummaryManager:
       - 一個 partial_summaries 列表
     """
     
-    def __init__(self, token_limit=250, model="gpt-4", temperature=0.0):
+    def __init__(self, token_limit=250, temperature=0.0):
         self.token_limit = token_limit
-        self.model = model
         self.temperature = temperature
         self.sql = MySQLManager()
         
@@ -32,7 +31,7 @@ class MultiUserSummaryManager:
         self.user_summary_times = {}
         
         # Summarizer 用於生成小摘要 / 大摘要
-        self.summarizer = Summarizer(model=self.model, temperature=self.temperature)
+        self.summarizer = Summarizer(temperature=self.temperature)
         
     def add_message(self, user_id, role, message, memory=""):
         """
@@ -40,7 +39,7 @@ class MultiUserSummaryManager:
         若該 user_id 尚未建立 buffer，就在此初始化。
         """
         if user_id not in self.user_buffers:
-            self.user_buffers[user_id] = ConversationBuffer(token_limit=self.token_limit, model=self.model)
+            self.user_buffers[user_id] = ConversationBuffer(token_limit=self.token_limit)
             self.user_partial_summaries[user_id] = []
             self.user_summary_times[user_id] = time.time()
             

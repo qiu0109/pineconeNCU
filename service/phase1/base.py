@@ -92,8 +92,7 @@ class FinalPromptGenerator:
 """
 
         messages = [
-            {"role": "system", "parts": [tone_prompt]},
             {"role": "user", "parts": [final_prompt]}
         ]
-        phase1_response = self.model.call(messages)
+        phase1_response = self.model.call(messages,system_instruction=tone_prompt)
         return phase1_response

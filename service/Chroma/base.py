@@ -3,7 +3,8 @@ import json
 import uuid  # 用於生成唯一 ID
 import os
 from dotenv import load_dotenv
-from ..model.gemini import Gemini
+from ..model import E5LargeEmbedder
+import time
 
 load_dotenv()
 
@@ -15,7 +16,7 @@ class ChromaDBManager:
         確保 ChromaDB 內的數據最新，避免重複插入。
         """
         self.chroma_client = chromadb.PersistentClient(path=db_path)
-        self.gemini_client = Gemini()
+        self.e5_client = E5LargeEmbedder()
         
         # 定義 Collection 名稱
         self.strategy_collection_name = "Strategy_Collection"
@@ -31,12 +32,8 @@ class ChromaDBManager:
         self.reset_and_populate_collection(self.intention_collection_name, self.intention_json_path)
         self.reset_and_populate_collection(self.story_collection_name, self.story_json_path)
 
-    def get_embedding(self, text):
-        """取得 OpenAI 向量嵌入表示（將文字轉成向量）。"""
-        return self.gemini_client.call_embedding(
-        content=text,
-        model_name="models/gemini-embedding-exp-03-07",  # 預設
-        task_type="RETRIEVAL_DOCUMENT")
+    def get_embedding(self, text: str, *, is_query: bool = False) -> list[float]:
+        return self.e5_client.encode(text, is_query=is_query)[0].tolist()
 
     def get_collection(self, collection_name):
         """取得指定名稱的 Collection，若不存在則創建。"""
@@ -45,22 +42,35 @@ class ChromaDBManager:
     def add_custom_data(self, collection_name, key, value=""):
         """
         向指定的 ChromaDB Collection 插入自定義數據，並自動生成 UUID 作為 ID。
-        :param collection_name: Collection 名稱 (Strategy_Collection / Intention_Collection)
-        :param text: 存入的文字內容
+        :param collection_name: Collection 名稱
+        :param key: 主要文字內容
+        :param value: 可選補充說明
         """
-        text = key
-        if value is not "": text += ":" + value
+        # ❶ 組合文字；請改用 != 避免 SyntaxWarning
+        text = f"{key}:{value}" if value != "" else key
         collection = self.get_collection(collection_name)
-        embedding = self.get_embedding(text)  # 取得 OpenAI 向量
-        unique_id = str(uuid.uuid4())  # 生成唯一 ID
 
-        collection.add(
-            ids=[unique_id],
-            embeddings=[embedding],
-            metadatas=[{"text": text}]
-        )
+        MAX_RETRY = 3          # 重試次數
+        for attempt in range(1, MAX_RETRY + 1):
+            try:
+                embedding = self.get_embedding(text)        # 可能拋錯
+                unique_id = str(uuid.uuid4())
 
-        print(f"✅ {collection_name} 插入成功：{unique_id} -> {text}")
+                collection.add(
+                    ids=[unique_id],
+                    embeddings=[embedding],
+                    metadatas=[{"text": text}]
+                )
+                print(f"✅ {collection_name} 插入成功：{unique_id} -> {text}")
+                break                                       # 成功就跳出迴圈
+
+            except Exception as e:
+                print(f"⚠️  第 {attempt}/{MAX_RETRY} 次寫入失敗：{e}")
+                if attempt == MAX_RETRY:
+                    print("❌ 已達最大重試次數，放棄此筆資料\n")
+                else:
+                    print("⏳ 1 分鐘後重試…\n")
+                    time.sleep(60)                          # ❷ 等 60 秒再試
 
     def reset_and_populate_collection(self, collection_name, json_path):
         """
@@ -107,7 +117,7 @@ class ChromaDBManager:
         :param query: 查詢內容
         """
         collection = self.get_collection(collection_name)
-        query_embedding = self.get_embedding(query)
+        query_embedding = self.get_embedding(query, is_query=True)   # ← is_query=True
         results = collection.query(query_embeddings=[query_embedding], n_results=1)  # 只取 1 筆資料
 
         if results["ids"] and results["metadatas"][0]:  # 檢查是否有結果

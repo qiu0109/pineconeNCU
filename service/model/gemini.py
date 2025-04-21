@@ -12,20 +12,20 @@ class Gemini():
         genai.configure(api_key=google_api)
 
         # 指定要使用的模型（示例名稱，實際需使用平台提供的模型ID）
-        MODEL_NAME = "gemini-2.0-flash"
+        self.MODEL_NAME = "gemini-2.0-flash"
        
-        # 發送請求
-        self.model = genai.GenerativeModel(
-            model_name = MODEL_NAME,
-            system_instruction = "你是一個校園的客服小幫手，請針對使用者的訊息，做出生動有趣的回應，可以適時但不過多的使用現代網路用語，(如XD 、笑死、酷喔)來應答，目標是解答使用者的各種校園問題"
-        )
+
 
     # 呼叫 gpt 模型協助生成回復
-    def call(self, prompt:list[dict]):
+    def call(self, prompt:list[dict], system_instruction = ''):
         """
         :param prompt: list[dict], 例如：[{"role":"user", "parts":["text"]}, ...]
         """
         try:
+            self.model = genai.GenerativeModel(
+                model_name = self.MODEL_NAME,
+                system_instruction = system_instruction
+            )
             response = self.model.generate_content(
                 contents = prompt
             )

@@ -93,7 +93,7 @@ class Intention():
         detail = []
         for i in range(len(oldLabel)):
             prompt = [
-                {"role": "system", "parts": [f"{self.compare_prompt}\n既有的多標籤意圖：**{oldLabel[i]}**\n新的多標籤意圖：**{newLabel[i]}**"]}
+                {"role": "user", "parts": [f"{self.compare_prompt}\n既有的多標籤意圖：**{oldLabel[i]}**\n新的多標籤意圖：**{newLabel[i]}**"]}
             ]
             
             for attempt in range(30):
@@ -155,13 +155,14 @@ class Intention():
         :param history: str, 歷史訊息（可選）
         """ 
         prompt = [
-            {"role": "system", "parts": [self.rough_prompt]},
             {"role": "user", "parts": [f"使用者重點回覆的訊息：**{reply_message}**\n請分析使用者最新訊息：**{message}**"]}
         ]
          
         for attempt in range(30):
             try:
-                response = re.search(r"\{(.*?)\}", self.model.call(prompt), re.DOTALL)
+                response =self.model.call(prompt,system_instruction=self.rough_prompt)
+                print(response)
+                response = re.search(r"\{(.*?)\}", response, re.DOTALL)
                 return json.loads(response.group(0))
             except Exception as e:
                 if attempt < 29:  # 失敗，最多重試29次
@@ -193,13 +194,14 @@ class Intention():
         
         for label in Labels:
             prompt = [
-                {"role": "system", "parts": [f"{self.detail_prompt}\n粗略多標籤意圖：**{label}**\n"]},
                 {"role": "user", "parts": [f"使用者重點回覆的訊息：**{reply_message}**\n請分析使用者最新訊息：**{message}**"]}
             ]
 
             for attempt in range(30):  # 嘗試兩次
                 try:
-                    response = re.search(r"\{(.*?)\}", self.model.call(prompt), re.DOTALL)
+                    response =self.model.call(prompt,system_instruction=f"{self.detail_prompt}\n粗略多標籤意圖：**{label}**\n")
+                    print(response)
+                    response = re.search(r"\{(.*?)\}", response, re.DOTALL)
                     detail.append(json.loads(response.group(0)))
                     break  # 成功解析 JSON，跳出重試迴圈
                 except Exception as e:

@@ -22,12 +22,23 @@ def cosine_similarity(vec1, vec2):
     return dot_product / (norm1 * norm2)
 
 
-def count_tokens(text: str, model: str = "cl100k_base"):
-    """粗略估算 token 數。若 tiktoken 可用則使用；否則以字元數為近似。"""
-    if tiktoken is None:
+def count_tokens(text: str, model: str = "cl100k_base") -> int:
+    """
+    傳回字串的 token 數。
+    - 如果參數是 OpenAI model 名稱 → 用 encoding_for_model
+    - 如果參數本身就是 tokeniser 名稱（如 cl100k_base）→ 用 get_encoding
+    - 若 tiktoken 不存在就退化成字元長度
+    """
+    try:
+        # 先嘗試把參數當作 model 名稱
+        enc = tiktoken.encoding_for_model(model)
+    except (KeyError, AttributeError):
+        # 不是 model，就當作 encoding 名稱
+        enc = tiktoken.get_encoding(model)
+    except Exception:      # tiktoken 沒裝或其他錯
         return len(text)
-    encoding = tiktoken.encoding_for_model(model)
-    return len(encoding.encode(text))
+
+    return len(enc.encode(text))
 
 
 class ConversationBuffer:
