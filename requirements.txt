@@ -6,3 +6,4 @@ pillow
 chromadb
 matplotlib
 tiktoken
+sentence_transformers
