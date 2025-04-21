@@ -1,0 +1,47 @@
+# 忽略 Python 編譯產生的暫存檔案
+__pycache__/
+*.py[cod]
+*$py.class
+
+# 忽略 virtual environment（虛擬環境）
+venv/
+env/
+ENV/
+.venv/
+.ENV/
+
+# 忽略 Jupyter Notebook checkpoint
+.ipynb_checkpoints/
+
+# 忽略 log、cache 和資料夾暫存檔
+*.log
+*.pot
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+
+# 忽略測試覆蓋率檔案
+.coverage
+.tox/
+.nox/
+.cache/
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# 忽略 pipenv 和 poetry
+Pipfile.lock
+poetry.lock
+
+# 忽略 vscode 設定
+.vscode/
+
+# 忽略作業系統產生的檔案
+.DS_Store
+Thumbs.db
+
+# 忽略 Windows AppData 路徑（有時 Git 會誤抓）
+AppData/
