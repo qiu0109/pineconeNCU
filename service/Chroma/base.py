@@ -1,11 +1,12 @@
 import chromadb
-import openai
 import json
 import uuid  # 用於生成唯一 ID
 import os
 from dotenv import load_dotenv
+from ..model.gemini import Gemini
 
 load_dotenv()
+
 
 class ChromaDBManager:
     def __init__(self, db_path="./chroma_db", api_key=None):
@@ -14,7 +15,7 @@ class ChromaDBManager:
         確保 ChromaDB 內的數據最新，避免重複插入。
         """
         self.chroma_client = chromadb.PersistentClient(path=db_path)
-        openai.api_key = os.getenv("OPENAI_API_KEY")
+        self.gemini_client = Gemini()
         
         # 定義 Collection 名稱
         self.strategy_collection_name = "Strategy_Collection"
@@ -32,8 +33,10 @@ class ChromaDBManager:
 
     def get_embedding(self, text):
         """取得 OpenAI 向量嵌入表示（將文字轉成向量）。"""
-        response = openai.Embedding.create(input=text, model="text-embedding-ada-002")
-        return response["data"][0]["embedding"]
+        return self.gemini_client.call_embedding(
+        content=text,
+        model_name="models/gemini-embedding-exp-03-07",  # 預設
+        task_type="RETRIEVAL_DOCUMENT")
 
     def get_collection(self, collection_name):
         """取得指定名稱的 Collection，若不存在則創建。"""

@@ -1,0 +1,8 @@
+mysql-connector-python
+dotenv
+openai==0.28.0
+google-generativeai
+pillow
+chromadb
+matplotlib
+tiktoken

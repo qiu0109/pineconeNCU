@@ -11,6 +11,7 @@ class MySQL():
     MYSQL_USER = os.getenv("MYSQL_USER")
     MYSQL_PASSWD = os.getenv("MYSQL_PASSWD")
     MYSQL_DATABASE = os.getenv("MYSQL_DATABASE")
+    
 
 
     # 初始化本機端資料庫
@@ -35,11 +36,14 @@ class MySQL():
 
     # 與資料庫連結
     def connect(self):
-        return mysql.connector.connect(
-            host = MySQL.MYSQL_HOST,     
-            user = MySQL.MYSQL_USER,
-            passwd = MySQL.MYSQL_PASSWD,
-        )
+        try:
+            return mysql.connector.connect(
+                host = self.MYSQL_HOST,     
+                user = self.MYSQL_USER,
+                passwd = self.MYSQL_PASSWD,
+            )
+        except Exception as e:
+            print(e)
 
     #重連測試
     def reconnect(self):

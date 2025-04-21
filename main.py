@@ -15,14 +15,15 @@ class ModuleManager():
 
     def __init__(self):
         # 資料庫連線
-        self.sql = db.MySQLManager(False)
+        self.sql = db.MySQLManager(True)
+
         # 意圖分析
         self.intention = it.Intention()
+
         # 回覆時間模擬
         self.reply = rr.ExponentialGrowthSimulator()
         # 回應生成主體
         self.phase1 = p1.FinalPromptGenerator()
-
         # 保留摘要系統
         self.summary_manager = MultiUserSummaryManager(
             token_limit=120,   # 可依需求調整 token 門檻
@@ -238,5 +239,10 @@ class ModuleManager():
 
 
 if __name__ == "__main__":
-    mm = ModuleManager()
-    mm.main()
+    try:
+        print("🔧 啟動 ModuleManager 中...")
+        mm = ModuleManager()
+        print("✅ 初始化完成，進入主循環")
+        mm.main()
+    except Exception as e:
+        print(f"❌ 啟動時發生錯誤：{e}")
