@@ -114,14 +114,14 @@ class Intention():
         detail = []
         for i in range(len(oldLabel)):
             prompt = [
-                {"role": "user", "parts": [f"{self.compare_prompt}\n既有的多標籤意圖：**{oldLabel[i]}**\n新的多標籤意圖：**{newLabel[i]}**"]}
+                {"role": "user", "parts": [f"既有的多標籤意圖：**{oldLabel[i]}**\n新的多標籤意圖：**{newLabel[i]}**"]}
             ]
             
             for attempt in range(30):
                 try:
-                    response = self.model.call(prompt)
+                    response = self.model.call(prompt, self.compare_prompt)
                     response = self._extract_json(response)
-                    detail.append(json.loads(response))
+                    detail.append(response)
                     break
                 except Exception as e:
                     if attempt < 29:  # 失敗，最多重試29次
