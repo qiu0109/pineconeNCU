@@ -33,7 +33,7 @@ class ChromaDBManager:
         self.reset_and_populate_collection(self.story_collection_name, self.story_json_path)
 
     def get_embedding(self, text: str, *, is_query: bool = False) -> list[float]:
-        return self.e5_client.encode(text, is_query=is_query)[0].tolist()
+        return self.e5_client.encode(text, is_query=is_query)
 
     def get_collection(self, collection_name):
         """取得指定名稱的 Collection，若不存在則創建。"""

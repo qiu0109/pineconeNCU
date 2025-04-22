@@ -8,7 +8,7 @@ import time
 # 保留摘要與記憶功能
 from service.summarizer import MultiUserSummaryManager
 from service.memory import Memory_Manager
-from service.model import Gemini
+from service.model import Gemini,E5LargeEmbedder
 
 
 class ModuleManager():
@@ -38,6 +38,7 @@ class ModuleManager():
         self.last_received_times = {}
         self.pending_users = set()
         self.model = Gemini()
+        self.e5_client = E5LargeEmbedder()
 
 
     def main(self) -> str:
@@ -100,10 +101,17 @@ class ModuleManager():
 
         # 意圖分析 
         intent = self.intention.multiIntention(user_input, reply_message)
+        #print(intent)
 
         intent_discript = []
         for item in intent:
-            intent_discript.append(item.get('intention'))
+            intent_item = item.get('intention')
+            if intent_item:
+                intent_discript.append(intent_item)
+            intent_item = item.get('story')
+            if intent_item:
+                intent_discript.append(intent_item)
+        #print(intent_discript)
 
         # Summary Manager處理使用者訊息 
         user_summary = self.summary_manager.add_message(user_id=uid, role="user", message=user_input, memory=topics)
@@ -191,7 +199,7 @@ class ModuleManager():
                 if role == "assistant":
                     temp_msg = f"<使用者>{temp_msg}</使用者>"
                 else:
-                    temp_msg = f"<柔伊>{temp_msg}</柔伊>"
+                    temp_msg = f"<松果大使>{temp_msg}</松果大使>"
                 last_10_history.append(temp_msg)
                 temp_msg = ""
                 turns += 1
@@ -216,7 +224,7 @@ class ModuleManager():
                 rpid = f"'{assistant_reply_id[i]}'"
             else:
                 rpid = "'None'"
-            embedding = f"'{str(self.model.call_embedding(content))}'"
+            embedding = f"'{str(self.e5_client.encode(content))}'"
             data = [uid, "'assistant'", content, embedding, "'True'", msg_id, rpid]
             props = ["`user_id`", "`role`", "`content`", "`embedding_vector`", "`state`", "`message_id`", "`reply_id`"]
             self.sql.push(table, data, props)
@@ -228,7 +236,7 @@ class ModuleManager():
 
         for bot in bots:
             bot_str = f"'{bot}'"
-            bot_embedding = f"'{str(self.model.call_embedding(bot_str))}'"
+            bot_embedding = f"'{str(self.e5_client.encode(bot_str))}'"
             # 加一點時間模擬
             reply_datetime += timedelta(seconds=int(len(bot)*1.3))
             data = [uid, "'bot'", bot_str, bot_embedding, "'False'", reply_datetime.strftime("'%Y-%m-%d %H:%M:%S'")]

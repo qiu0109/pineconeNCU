@@ -1,15 +1,15 @@
 import os
 import tiktoken
 from ..model.gemini import Gemini
+from ..model.e5_large import E5LargeEmbedder
 
 gemini_client = Gemini()  # 單例，重複建立成本高
+e5_client = E5LargeEmbedder()
 
 
-def get_text_embedding(text: str | list[str],
-                       model_name: str = "models/gemini-embedding-exp-03-07",
-                       task_type: str = "RETRIEVAL_DOCUMENT"):
-    """利用 Gemini 取得文字向量。"""
-    return gemini_client.call_embedding(text, model_name=model_name, task_type=task_type)
+def get_text_embedding(text: str | list[str]):
+    """利用 e5_large 取得文字向量。"""
+    return e5_client.encode(text)
 
 
 def cosine_similarity(vec1, vec2):
@@ -74,9 +74,9 @@ class Summarizer:
         self.temperature = temperature
         self._model = gemini_client
 
-    def _generate(self, prompt: list[dict]):
+    def _generate(self, prompt: list[dict], system_content: str):
         """統一呼叫 Gemini 產生內容。"""
-        return self._model.call(prompt)
+        return self._model.call(prompt,system_content)
 
     def summarize_chunk(self, conversation_text: str) -> str:
         system_content = (
@@ -86,10 +86,9 @@ class Summarizer:
         user_content = f"以下是需要摘要的文本：\n\n{conversation_text}"
 
         prompt = [
-            {"role": "system", "parts": [system_content]},
             {"role": "user", "parts": [user_content]},
         ]
-        return self._generate(prompt).strip()
+        return self._generate(prompt,system_content).strip()
 
     def summarize_topic(self, partial_summaries: list[str]) -> str:
         joined_summaries = "\n".join(partial_summaries)
@@ -99,10 +98,9 @@ class Summarizer:
         )
         user_content = f"以下是多段小摘要內容：\n{joined_summaries}"
         prompt = [
-            {"role": "system", "parts": [system_content]},
             {"role": "user", "parts": [user_content]},
         ]
-        return self._generate(prompt).strip()
+        return self._generate(prompt, system_content).strip()
 
 
 def need_topic_summary(partial_summaries: list[str], threshold: float = 0.84, max_partial_count: int = 5):

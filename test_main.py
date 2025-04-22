@@ -3,7 +3,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# 今晚吃牛丼好嗎
 
 def main():
     sql = db.MySQLManager(False)

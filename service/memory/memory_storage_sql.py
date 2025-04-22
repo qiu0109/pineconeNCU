@@ -37,6 +37,7 @@ class Memory_Manager:
 
         # 意圖偵測 (若無明顯意圖則不儲存)
         intention_result = self.it.multiIntention(text)
+        print(intention_result)
         if not intention_result:
             print("[store_memory] 偵測不到意圖 => 捨棄")
             return None

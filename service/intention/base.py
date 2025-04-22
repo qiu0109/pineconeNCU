@@ -22,6 +22,27 @@ class Intention():
 
         self.detail_label = []
 
+    def _strip_code_fence(self, raw: str) -> str:
+        """
+        將 LLM 回傳的字串去掉最開頭 ```json（或 ```）與最末尾 ```。
+        其他內容一律原樣保留。
+        """
+        if not raw:
+            return raw
+        return re.sub(r"^\s*```(?:json)?\s*|\s*```\s*$", "", raw, flags=re.I)
+    
+    def _extract_json(self, raw: str) -> dict:
+        """
+        去掉 ```json code fence，並回傳第一個合法 JSON 物件。
+        取不到就 raise ValueError。
+        """
+        raw = self._strip_code_fence(raw)
+        m = re.search(r"\{.*?\}", raw, re.S)
+        if not m:
+            print(raw)
+            raise ValueError("找不到 JSON 區塊")
+        return json.loads(m.group(0))
+
 
     # 填入 Rough 表的內容
     def createRoughTable(self):
@@ -99,6 +120,7 @@ class Intention():
             for attempt in range(30):
                 try:
                     response = self.model.call(prompt)
+                    response = self._extract_json(response)
                     detail.append(json.loads(response))
                     break
                 except Exception as e:
@@ -161,9 +183,9 @@ class Intention():
         for attempt in range(30):
             try:
                 response =self.model.call(prompt,system_instruction=self.rough_prompt)
+                response = self._extract_json(response)
                 print(response)
-                response = re.search(r"\{(.*?)\}", response, re.DOTALL)
-                return json.loads(response.group(0))
+                return response
             except Exception as e:
                 if attempt < 29:  # 失敗，最多重試29次
                         print(f"[Intention Error] 第{attempt+1}次解析失敗，正在重試... ({e})")
@@ -200,9 +222,9 @@ class Intention():
             for attempt in range(30):  # 嘗試兩次
                 try:
                     response =self.model.call(prompt,system_instruction=f"{self.detail_prompt}\n粗略多標籤意圖：**{label}**\n")
+                    response = self._extract_json(response)
                     print(response)
-                    response = re.search(r"\{(.*?)\}", response, re.DOTALL)
-                    detail.append(json.loads(response.group(0)))
+                    detail.append(response)
                     break  # 成功解析 JSON，跳出重試迴圈
                 except Exception as e:
                     if attempt < 29:  # 失敗，最多重試29次
