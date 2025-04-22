@@ -231,8 +231,8 @@ class ModuleManager():
 
         # 寫入機器人訊息
         receive_time = datetime.now()
-        reply_time = self.reply.get_random_reply_time()
-        reply_datetime = receive_time + timedelta(minutes=reply_time)
+        #reply_time = self.reply.get_random_reply_time()
+        reply_datetime = receive_time
 
         for bot in bots:
             bot_str = f"'{bot}'"
