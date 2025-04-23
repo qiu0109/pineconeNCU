@@ -83,7 +83,7 @@ class ModuleManager():
 
     def process_user_message(self, uid):
         # 取得訊息
-        messages, messages_id, reply_id, msg_timestamps = self.get_message(uid)
+        messages, messages_id, reply_id, msg_timestamps, reply_tokens = self.get_message(uid)
         history = self.get_history(uid)
         reply_message = self.get_reply_message(uid, reply_id)
 
@@ -141,7 +141,7 @@ class ModuleManager():
 
         # 新增到 dialogue
         self.delete_temp_dialogue(uid)
-        self.add_dialogue(uid, messages, messages_id, answer, reply_id)
+        self.add_dialogue(uid, messages, messages_id, answer, reply_id, reply_tokens)
 
         print("\n處理完畢繼續接受訊息...")
         return
@@ -162,14 +162,15 @@ class ModuleManager():
             self.sql.push(table, data, properties)
 
     def get_message(self, uid: str, table="temp_dialogue"):
-        message, message_id, reply_id, timestamps = [], [], [], []
-        data = self.sql.fetch(table, ["content", "message_id", "reply_id", "timestamp"], f"`user_id` = {uid}")
+        message, message_id, reply_id, timestamps, reply_tokens = [], [], [], [], []
+        data = self.sql.fetch(table, ["content", "message_id", "reply_id", "timestamp", "reply_token"], f"`user_id` = {uid}")
         for item in data:
             message.append(item[0])
             message_id.append(item[1])
             reply_id.append(item[2])
             timestamps.append(item[3])
-        return message, message_id, reply_id, timestamps
+            reply_tokens.append(item[4])
+        return message, message_id, reply_id, timestamps, reply_tokens
 
     def get_reply_message(self, uid: str, reply_id: list, table="temp_dialogue"):
         answer = []
@@ -214,7 +215,7 @@ class ModuleManager():
         self.sql.delete(table, f"`user_id` = {uid} ")
 
     def add_dialogue(self, uid: str, assistants: list, assistant_id: list, bots: list,
-                     assistant_reply_id: list = None, table="dialogue"):
+                     assistant_reply_id: list = None, reply_token: list = None, table="dialogue"):
         # 寫入使用者訊息
         for i in range(len(assistants)):
             content = f"'{assistants[i]}'"
@@ -223,9 +224,13 @@ class ModuleManager():
                 rpid = f"'{assistant_reply_id[i]}'"
             else:
                 rpid = "'None'"
+            if reply_token[i]:
+                rpid = f"'{reply_token[i]}'"
+            else:
+                rpid = "'None'"
             embedding = f"'{str(self.e5_client.encode(content))}'"
-            data = [uid, "'assistant'", content, embedding, "'True'", msg_id, rpid]
-            props = ["`user_id`", "`role`", "`content`", "`embedding_vector`", "`state`", "`message_id`", "`reply_id`"]
+            data = [uid, "'assistant'", content, embedding, "'True'", msg_id, rpid, reply_token]
+            props = ["`user_id`", "`role`", "`content`", "`embedding_vector`", "`state`", "`message_id`", "`reply_id`", "`reply_token`"]
             self.sql.push(table, data, props)
 
         # 寫入機器人訊息

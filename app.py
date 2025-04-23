@@ -4,6 +4,7 @@ from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
 import datetime
 from utils.database import MySQLManager
+import time
 
 # === LINE 金鑰 ===
 CHANNEL_ACCESS_TOKEN = 'G8HOp50ZIU22bU/jMAUrd8p9wnghhMHHdmqir4RoRdSTwGRZ4M0LGZoUXBsxatq/tkF3p82y1/rZuRq7gpTrYrCuPBgkGzO3o20qeWEIctzC4EmWIEuImy1lXSh1mGSzinKvFt1n7hdPrE5fzO8XFwdB04t89/1O/w1cDnyilFU='
@@ -46,10 +47,38 @@ def handle_message(event):
     sql.push(table, input_data, properties)
     
     print(f"👤 使用者說：{user_input}")
-    line_bot_api.reply_message(
-        event.reply_token,
-        TextSendMessage(text=f"你說的是：「{user_input}」")
-    )
+    
+
+def check_mysql_periodically():
+    with app.app_context():
+        while True:
+            try:
+                sql.sql.reconnect()
+
+                # 定期從 MySQL 中查詢需要發送的數據
+                table = "dialogue"
+                rule=" reply_time ASC"
+                condition=" state = 'False'"
+                properties=['user_id','content','reply_time','dialogue_id', "reply_token"]
+                new_messages = sql.fetch(table,properties,condition,rule,1)  # 假設你有這個方法
+                print(new_messages)
+                if len(new_messages) > 0:
+                    reply_time=new_messages[0][2]
+                    if reply_time<datetime.now():
+                        message = new_messages[0][1]
+                        uid = new_messages[0][0]
+                        reply_token = new_messages[0][4]
+
+                        sql.delete(table,'dialogue_id = '+str(new_messages[0][3]))
+                        
+                        line_bot_api.reply_message(
+                            reply_token,
+                            TextSendMessage(text=f"{message}")
+                        )
+
+                time.sleep(1)
+            except Exception as e:
+                print(f"後台執行緒發生錯誤: {e}")
 
 if __name__ == "__main__":
     app.run(port=5000,debug= True)
