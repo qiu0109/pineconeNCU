@@ -12,7 +12,7 @@ line_bot_api = LineBotApi(CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(CHANNEL_SECRET)
 
 
-sql = MySQLManager(False)
+sql = MySQLManager(True)
 app = Flask(__name__)
 print("✅ Flask 啟動中...")
 
@@ -35,8 +35,8 @@ def callback():
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
     user_input = event.message.text
-    uid = event.source.userId
-    message_id = event.message.id
+    uid = "'"+event.source.user_id+"'"
+    message_id = "'"+event.message.id+"'"
     message = "'" + event.message.text + "'"
     reply_token = "'" + event.reply_token + "'"
 
