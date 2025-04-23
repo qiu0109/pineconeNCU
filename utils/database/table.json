@@ -23,7 +23,8 @@
         "state":"VARCHAR(8) DEFAULT 'False'",
         "reply_time":"TIMESTAMP",
         "message_id": "VARCHAR(24)",
-        "reply_id": "VARCHAR(24) DEFAULT 'None'"
+        "reply_id": "VARCHAR(24) DEFAULT 'None'",
+        "reply_token": "VARCHAR(40)"
     },
     "temp_dialogue": {
         "temp_dialogue_id": "INT PRIMARY KEY AUTO_INCREMENT",
@@ -33,7 +34,8 @@
         "timestamp": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
         "state":"VARCHAR(8) DEFAULT 'False'",
         "message_id": "VARCHAR(24)",
-        "reply_id": "VARCHAR(24) DEFAULT 'None'"
+        "reply_id": "VARCHAR(24) DEFAULT 'None'",
+        "reply_token": "VARCHAR(40)"
     },
     "AI_Account": {
         "AI_id": "INT AUTO_INCREMENT PRIMARY KEY",
