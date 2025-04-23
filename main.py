@@ -15,7 +15,7 @@ class ModuleManager():
 
     def __init__(self):
         # 資料庫連線
-        self.sql = db.MySQLManager(False)
+        self.sql = db.MySQLManager(True)
 
         # 意圖分析
         self.intention = it.Intention()
@@ -31,7 +31,6 @@ class ModuleManager():
         )
         # 保留記憶系統
         self.memory_manager = Memory_Manager()
-
 
         # Buffer 設定 (可視需要保留或移除)
         self.buffer = 5

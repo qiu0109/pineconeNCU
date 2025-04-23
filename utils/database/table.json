@@ -45,45 +45,6 @@
         "private_key": "TEXT",
         "created_time": "TIMESTAMP"
     },
-    "user_engagement": {
-        "user_id" :"VARCHAR(40) NOT NULL",
-        "engagement_score": "FLOAT DEFAULT 0",
-        "current_stage": "VARCHAR(50) DEFAULT 'Disengagement'",
-        "last_user_msg_time": "DATETIME DEFAULT NULL",
-        "last_bot_reply_time": "DATETIME DEFAULT NULL",
-        "last_event_time": "DATETIME NULL",
-        "reengage_start_time": "DATETIME DEFAULT NULL",
-        "reengage_start_score": "FLOAT DEFAULT 0",
-        "avg_reply_time": "FLOAT DEFAULT NULL",
-        "in_session": "TINYINT DEFAULT 0",
-        "session_start_time": "DATETIME DEFAULT NULL"
-    },
-    "engagement_history": {
-        "id" :"INT AUTO_INCREMENT PRIMARY KEY",
-        "user_id" :"VARCHAR(50) NOT NULL",
-        "event_time" :"DATETIME NOT NULL",
-        "old_score" :"FLOAT NOT NULL",
-        "new_score" :"FLOAT NOT NULL",
-        "event_type": "VARCHAR(50) NOT NULL",
-        "note": "VARCHAR(255) DEFAULT NULL"
-    },
-    "session_engagement": {
-        "id":"INT AUTO_INCREMENT PRIMARY KEY",
-        "user_id": "VARCHAR(50) NOT NULL",
-        "session_start": "DATETIME",
-        "session_end": "DATETIME",
-        "low_sec": "DOUBLE",
-        "mid_sec": "DOUBLE NOT NULL",
-        "high_sec": "DOUBLE NOT NULL",
-        "total_sec": "DOUBLE NOT NULL",
-        "streak_val": "INT NOT NULL",
-        "session_score": "DOUBLE NOT NULL",
-        "gap_penalty": "DOUBLE NOT NULL",
-        "alpha_sess": "DOUBLE NOT NULL",
-        "old_score" :"DOUBLE NOT NULL",
-        "new_score" :"DOUBLE NOT NULL",
-        "created_at": "DATETIME NOT NULL"
-    },
     "topics": {
       "id": "VARCHAR(255) PRIMARY KEY",
       "user_id": "VARCHAR(40)",
@@ -101,39 +62,6 @@
       "created_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
       "last_called_from_memory": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
       "topic_id": "VARCHAR(255)"
-    },
-    "favorability": {
-        "id": "INT PRIMARY KEY AUTO_INCREMENT",
-        "uid": "VARCHAR(40)",
-        "mode": "VARCHAR(12)",
-        "memory": "TEXT",
-        "summary": "TEXT",
-        "time": "FLOAT",
-        "time_decay": "FLOAT",
-        "positive": "FLOAT",
-        "positive_decay": "FLOAT",
-        "favor": "FLOAT",
-        "importance": "FLOAT",
-        "influence": "FLOAT",
-        "influence_reason": "TEXT",
-        "carcity": "FLOAT",
-        "scarcity_reason": "TEXT",
-        "timeliness": "FLOAT",
-        "timeliness_reason": "TEXT",
-        "posemotion": "FLOAT",
-        "negemotion": "FLOAT",
-        "nonemotion": "FLOAT",
-        "emotion_reason": "TEXT",
-        "privacy": "FLOAT",
-        "delta_time": "FLOAT",
-        "T": "FLOAT",
-        "P": "FLOAT",
-        "weight": "FLOAT",
-        "delta_favor": "FLOAT",
-        "new_favor": "FLOAT"
-    },
-    "sticker": {
-        "sticker_id": "INT", 
-        "message": "TEXT"
     }
+
 }
