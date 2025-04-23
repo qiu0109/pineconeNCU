@@ -33,7 +33,7 @@ class ModuleManager():
         self.memory_manager = Memory_Manager()
 
         # Buffer 設定 (可視需要保留或移除)
-        self.buffer = 5
+        self.buffer = 0
         self.last_received_times = {}
         self.pending_users = set()
         self.model = Gemini()
@@ -225,11 +225,11 @@ class ModuleManager():
             else:
                 rpid = "'None'"
             if reply_token[i]:
-                rpid = f"'{reply_token[i]}'"
+                rptk = f"'{reply_token[i]}'"
             else:
-                rpid = "'None'"
+                rptk = "'None'"
             embedding = f"'{str(self.e5_client.encode(content))}'"
-            data = [uid, "'assistant'", content, embedding, "'True'", msg_id, rpid, reply_token]
+            data = [uid, "'assistant'", content, embedding, "'True'", msg_id, rpid, rptk]
             props = ["`user_id`", "`role`", "`content`", "`embedding_vector`", "`state`", "`message_id`", "`reply_id`", "`reply_token`"]
             self.sql.push(table, data, props)
 
@@ -242,7 +242,6 @@ class ModuleManager():
             bot_str = f"'{bot}'"
             bot_embedding = f"'{str(self.e5_client.encode(bot_str))}'"
             # 加一點時間模擬
-            reply_datetime += timedelta(seconds=int(len(bot)*1.3))
             data = [uid, "'bot'", bot_str, bot_embedding, "'False'", reply_datetime.strftime("'%Y-%m-%d %H:%M:%S'")]
             props = ["`user_id`", "`role`", "`content`", "`embedding_vector`", "`state`", "`reply_time`"]
             self.sql.push(table, data, props)

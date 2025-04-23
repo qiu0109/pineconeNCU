@@ -1,0 +1,35 @@
+"[Error] gemini 呼叫失敗: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. [violations {
+  quota_metric: ""generativelanguage.googleapis.com/generate_content_free_tier_requests""
+  quota_id: ""GenerateRequestsPerMinutePerProjectPerModel-FreeTier""
+  quota_dimensions {
+    key: ""location""
+    value: ""global""
+  }
+  quota_dimensions {
+    key: ""model""
+    value: ""gemini-2.0-flash""
+  }
+  quota_value: 15
+}
+, links {
+  description: ""Learn more about Gemini API quotas""
+  url: ""https://ai.google.dev/gemini-api/docs/rate-limits""
+}
+, retry_delay {
+  seconds: 6
+}
+]"
+"中央大學包含以下學院及科系：
+
+*   **文學院：** 中國文學系、外國語文學系、哲學研究所。
+*   **理學院：** 數學系、物理學系、化學系、光電科學與工程學系、科學教育中心。
+*   **工學院：** 土木工程學系、機械工程學系、化學工程與材料工程學系、資訊工程學系、電機工程學系、環境工程研究所。
+*   **資訊電機學院：** 資訊工程學系、電機工程學系。
+*   **管理學院：** 企業管理學系、資訊管理學系、財務金融學系、會計學系。
+*   **地球科學學院：** 地球科學學系、大氣科學學系。
+*   **客家學院：** 客家語文暨社會科學學系。"
+使用者詢問中央大學有哪些科系。機器人回覆列出中央大學的所有科系，並依學院分類：文學院（中文、外文、哲學、歷史、藝術、英美語文）、理學院（數學、物理、化學、光電、科學教育）、工學院（土木、機械、化工材料、資訊、電機、環境工程）、資訊電機學院（資訊、電機）、地球科學學院（地球科學、大氣科學）、管理學院（企管、資管、財金、會計）、客家學院（客家語文暨社會科學），以及教學單位（通識教育、體育室、師資培育）。
+台大科系多元豐富，涵蓋文、理、工、醫、農等領域，法律、電機、資工、醫學等科系皆為頂尖。若想了解更詳細的科系介紹，建議參考台大官方網站。
+中大校園內有多樣化的餐廳選擇，涵蓋簡餐、麵食及異國料理。簡餐類有女餐、男餐、鴻園和松苑，麵食則可選擇麵魂麵到。若想品嚐異國風味，亦有泰式料理可供選擇。建議可依照個人喜好選擇不同類型的餐廳。
+中央大學科系多元，包含文、理、工、資訊電機、地球科學、管理、客家學院以及通識教育中心。各學院下轄多個學系。若想了解特定領域，可要求更詳細的介紹。
+中央大學附近餐廳選擇豐富，主要分為校內和校外兩大類。校內有松苑餐廳和女餐，提供簡餐、麵食等多樣化選擇，價格實惠。校外則有後門小吃、中大路各式餐廳（如義大利麵、火鍋等），以及搭乘公車可達的SOGO商圈，提供更廣泛的餐飲選擇。

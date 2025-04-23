@@ -3,6 +3,7 @@ from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
 import datetime
+import threading
 from utils.database import MySQLManager
 import time
 
@@ -64,21 +65,23 @@ def check_mysql_periodically():
                 print(new_messages)
                 if len(new_messages) > 0:
                     reply_time=new_messages[0][2]
-                    if reply_time<datetime.now():
+                    if reply_time<datetime.datetime.now():
                         message = new_messages[0][1]
                         uid = new_messages[0][0]
                         reply_token = new_messages[0][4]
 
                         sql.delete(table,'dialogue_id = '+str(new_messages[0][3]))
                         
-                        line_bot_api.reply_message(
-                            reply_token,
-                            TextSendMessage(text=f"{message}")
-                        )
+                        line_bot_api.push_message(uid, TextSendMessage(text=f"{message}"))
+                        # line_bot_api.reply_message(
+                        #     reply_token,
+                        #     TextSendMessage(text=f"{message}")
+                        # )
 
                 time.sleep(1)
             except Exception as e:
                 print(f"後台執行緒發生錯誤: {e}")
 
 if __name__ == "__main__":
+    threading.Thread(target=check_mysql_periodically, daemon=True).start()
     app.run(port=5000,debug= True)
