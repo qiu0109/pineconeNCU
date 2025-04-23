@@ -7,3 +7,5 @@ chromadb
 matplotlib
 tiktoken
 sentence_transformers
+line-bot-sdk
+flask
