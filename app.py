@@ -3,6 +3,7 @@ from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
 import datetime
+from utils.database import MySQLManager
 
 # === LINE 金鑰 ===
 CHANNEL_ACCESS_TOKEN = 'G8HOp50ZIU22bU/jMAUrd8p9wnghhMHHdmqir4RoRdSTwGRZ4M0LGZoUXBsxatq/tkF3p82y1/rZuRq7gpTrYrCuPBgkGzO3o20qeWEIctzC4EmWIEuImy1lXSh1mGSzinKvFt1n7hdPrE5fzO8XFwdB04t89/1O/w1cDnyilFU='
@@ -10,6 +11,8 @@ CHANNEL_SECRET = '4a24eeef056b6ccd9c2a0096422b831a'
 line_bot_api = LineBotApi(CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(CHANNEL_SECRET)
 
+
+sql = MySQLManager(False)
 app = Flask(__name__)
 print("✅ Flask 啟動中...")
 
@@ -32,6 +35,16 @@ def callback():
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
     user_input = event.message.text
+    uid = event.source.userId
+    message_id = event.message.id
+    message = "'" + event.message.text + "'"
+    reply_token = "'" + event.reply_token + "'"
+
+    table = "temp_dialogue"
+    input_data = [uid, message, "'False'", message_id, reply_token]
+    properties = ["`user_id`", "`content`", "`state`", "`message_id`", "`reply_token`"]
+    sql.push(table, input_data, properties)
+    
     print(f"👤 使用者說：{user_input}")
     line_bot_api.reply_message(
         event.reply_token,
