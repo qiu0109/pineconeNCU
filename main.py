@@ -242,8 +242,8 @@ class ModuleManager():
             bot_str = f"'{bot}'"
             bot_embedding = f"'{str(self.e5_client.encode(bot_str))}'"
             # 加一點時間模擬
-            data = [uid, "'bot'", bot_str, bot_embedding, "'False'", reply_datetime.strftime("'%Y-%m-%d %H:%M:%S'")]
-            props = ["`user_id`", "`role`", "`content`", "`embedding_vector`", "`state`", "`reply_time`"]
+            data = [uid, "'bot'", bot_str, bot_embedding, "'False'", reply_datetime.strftime("'%Y-%m-%d %H:%M:%S'"), rptk]
+            props = ["`user_id`", "`role`", "`content`", "`embedding_vector`", "`state`", "`reply_time`", "`reply_token`"]
             self.sql.push(table, data, props)
 
         # 如不需要互動度計算，eg.bot_send_message(uid, reply_datetime) 也可刪除

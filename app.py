@@ -27,6 +27,7 @@ def callback():
     print("📥 有訊息打進 /callback！")
     signature = request.headers['X-Line-Signature']
     body = request.get_data(as_text=True)
+    print("body:",body)
     try:
         handler.handle(body, signature)
     except InvalidSignatureError:
@@ -62,21 +63,24 @@ def check_mysql_periodically():
                 condition=" state = 'False'"
                 properties=['user_id','content','reply_time','dialogue_id', "reply_token"]
                 new_messages = sql.fetch(table,properties,condition,rule,1)  # 假設你有這個方法
-                print(new_messages)
+                #print(new_messages)
                 if len(new_messages) > 0:
                     reply_time=new_messages[0][2]
                     if reply_time<datetime.datetime.now():
                         message = new_messages[0][1]
                         uid = new_messages[0][0]
                         reply_token = new_messages[0][4]
+                        data = {"state":"'True'"}
+                        condi = {"dialogue_id":"'"+str(new_messages[0][3])+"'"}
 
-                        sql.delete(table,'dialogue_id = '+str(new_messages[0][3]))
+                        sql.update(table, data, condi)
+                        #print("reply_token:",reply_token)
                         
-                        line_bot_api.push_message(uid, TextSendMessage(text=f"{message}"))
-                        # line_bot_api.reply_message(
-                        #     reply_token,
-                        #     TextSendMessage(text=f"{message}")
-                        # )
+                        #line_bot_api.push_message(uid, TextSendMessage(text=f"{message}"))
+                        line_bot_api.reply_message(
+                            reply_token,
+                            TextSendMessage(text=f"{message.strip('\n')}")
+                        )
 
                 time.sleep(1)
             except Exception as e:
