@@ -15,7 +15,7 @@ class ModuleManager():
 
     def __init__(self):
         # 資料庫連線
-        self.sql = db.MySQLManager(True)
+        self.sql = db.MySQLManager(False)
 
         # 意圖分析
         self.intention = it.Intention()
