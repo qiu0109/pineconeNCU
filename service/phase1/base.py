@@ -97,3 +97,86 @@ class FinalPromptGenerator:
         ]
         phase1_response = self.model.call(messages,system_instruction=tone_prompt)
         return phase1_response
+
+class FinalPromptGenerator_flowEngine:
+    def __init__(self):
+        self.model = model.GPT4O()
+
+    def generate_final_prompt(self, user_input: str, main_intent: str, step_name: str, step_content: str, history="None", extra_data="None", check_result="None", ph1_emotion_tone="None", fail_reason=None):
+        """
+        根據知識庫流程資訊，生成最終提示詞：
+        user_input: 使用者輸入
+        main_intent: 目前主流程
+        step_name: 目前步驟名稱
+        step_content: 步驟說明
+        history: 歷史訊息
+        extra_data: 相關資料（知識庫 data）
+        check_result: 檢查結果
+        ph1_emotion_tone: 情緒提示
+        fail_reason: 檢查未通過的原因
+        """
+        fail_reason_text = f"{fail_reason}" if fail_reason else "None"
+        final_prompt = f"""
+        目前主流程：{main_intent}
+        目前步驟：{step_name}
+        步驟說明：{step_content}
+        使用者輸入：{user_input}
+        歷史訊息：{history}
+        相關資料：{extra_data}
+        上次檢查未通過的原因：{fail_reason_text}
+        """
+        messages = [
+            {"role": "system", "content": tone_prompt},
+            {"role": "user", "content": final_prompt}
+        ]
+        phase1_response = self.model.call(messages)
+        return phase1_response
+
+def llm_step_checker(user_input, ai_reply, step_name, step_content, extra_data, history, llm_model=None):
+    """
+    用 LLM 判斷目前步驟是否完成
+    回傳 (True/False, reason)
+    """
+    # 空值防呆
+    user_input = user_input or "None"
+    ai_reply = ai_reply or "None"
+    step_name = step_name or "None"
+    step_content = step_content or "None"
+    extra_data = extra_data or "None"
+    history = history or "None"
+
+    if llm_model is None:
+        llm_model = model.GPT4O()
+
+    check_prompt = f"""
+    你是一個流程監督AI，請判斷下列對話是否已完成指定步驟，或判斷現在是否退出這個步驟較為合適。
+
+    ‑ 若判斷現在退出這個步驟較為合適，請只回答「EXIT」。
+    ‑ 若已完成此步驟，請只回答「已完成」。
+    ‑ 若未完成，請回答「未完成：」並說明原因（例如：格式不符、缺少資訊、資訊虛假、未提供等）。
+
+    步驟名稱：{step_name}
+    步驟說明：{step_content}
+    相關資料：{extra_data}
+    歷史訊息：{history}
+    使用者最新輸入：{user_input}
+    AI最新回覆：{ai_reply}
+    """
+    print(f"[DEBUG] check_prompt:\n{check_prompt}")
+
+    messages = [
+        {"role": "user", "content": check_prompt}
+    ]
+
+    result = llm_model.call(messages, temperature=0.0)
+    print(f"[DEBUG] LLM 步驟檢查回傳：{result}")  # debug print
+
+    lowered = result.strip().lower()
+    if lowered.startswith("exit") or "退出流程" in lowered or "取消流程" in lowered:
+        return False, "EXIT_FLOW"
+    if "已完成" in result:
+        return True, ""
+    if "未完成：" in result:
+        reason = result.split("未完成：", 1)[-1].strip()
+        return False, reason
+    return False, "未明確說明原因"

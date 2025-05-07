@@ -9,3 +9,4 @@ tiktoken
 sentence_transformers
 line-bot-sdk
 flask
+pandas
