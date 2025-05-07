@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 import utils.random_reply as rr
 import service.phase1 as p1
 import time
+from service.flow_engine.base import FlowEngine
 
 # 保留摘要與記憶功能
 from service.summarizer import MultiUserSummaryManager
@@ -38,6 +39,7 @@ class ModuleManager():
         self.pending_users = set()
         self.model = Gemini()
         self.e5_client = E5LargeEmbedder()
+        self.flow_engine = FlowEngine()  # 整合多步驟流程引擎
 
 
     def main(self) -> str:
@@ -120,6 +122,29 @@ class ModuleManager():
             # 視需求將其寫入 memory
             self.memory_manager.store_memory(user_id=uid, text=summary, importance=0.5, frequency=1 )
 
+        flow_reply, in_flow = self.flow_engine.handle(uid.strip("'"), user_input)
+        if in_flow:
+            # 將流程引擎生成的回應分割後回傳
+            answer = self.split_message(flow_reply or "")
+            print(f"\n[FlowEngine] answer: 【{answer}】")
+
+            # 清理 temporary dialogue 以避免重覆處理
+            self.delete_temp_dialogue(uid)
+
+            # 把訊息寫入 dialogue 歷史
+            self.add_dialogue(uid, messages, messages_id, answer, reply_id)
+
+            # 更新摘要 / 記憶 / 好感度
+            user_summary = self.summary_manager.add_message(user_id=uid, role="bot", message=answer, memory=topics)
+            if user_summary is not None:
+                # 做摘要
+                summary = user_summary['summary']
+                # 視需求將其寫入 memory
+                self.memory_manager.store_memory(user_id=uid, text=summary, importance=0.5, frequency=1 )
+
+            print("\n處理完畢繼續接受訊息 (FlowEngine)...")
+            return
+        
         # 單次生成回應 (不再多次檢查ReplyChecker)
         phase1_response = self.phase1.generate_final_prompt(
             user_input=user_input,

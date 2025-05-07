@@ -85,3 +85,4 @@ class MySQLManager():
         if condition is not None: query += f"WHERE {condition}"
         self.sql.execute(query)
         return
+
