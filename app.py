@@ -117,7 +117,6 @@ def handle_message(event):
         )
 
 
-@handler.add(MessageEvent, message=TextMessage)
 
 # ---- SQL 安全轉義小工具 ----
 def esc(val):
@@ -126,6 +125,7 @@ def esc(val):
         return "NULL"
     return "'" + str(val).replace("\\", "\\\\").replace("'", "''") + "'"
 
+@handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
     user_input = event.message.text
     uid = "'"+event.source.user_id+"'"

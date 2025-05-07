@@ -2,7 +2,7 @@ import json
 import re
 import service.model as model
 import utils.database as db
-import service.Chroma as cm
+# import service.Chroma as cm
 
 class Intention():
     def __init__(self):
@@ -17,7 +17,7 @@ class Intention():
         with open("utils/database/intention_menu.json", 'r', encoding='utf-8') as file:
             self.intention_menu = json.load(file)
         self.sql = db.MySQLManager(False)
-        self.chroma = cm.ChromaDBManager()
+        # self.chroma = cm.ChromaDBManager()
         # self.createRoughTable()
 
         self.detail_label = []
@@ -99,8 +99,8 @@ class Intention():
     def get_detail(self, rough:list) -> list:
         detail = []
 
-        for i in range(len(rough)):
-            detail.append(self.chroma.search_data("Intention_Collection", rough[i]))
+        # for i in range(len(rough)):
+            # detail.append(self.chroma.search_data("Intention_Collection", rough[i]))
         return detail
 
 
