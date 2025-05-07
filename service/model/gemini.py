@@ -57,7 +57,9 @@ class Gemini():
             return resp["embedding"]
         except Exception as e:
             return f"[Error] Gemini Embedding 失敗: {e}"
-        
+
+
+
     def analyze_image(self, image_path: str, system_instruction: str = '') -> str:
         """
         利用 Gemini 多模態模型分析圖片內容，並回傳文字描述。
@@ -72,18 +74,18 @@ class Gemini():
             當使用者上傳含有活動海報的圖片，請根據海報畫面中的文字與版面，完成下列任務並以 JSON 物件 回傳結果：
             1.**精準擷取下列欄位（若海報缺漏，請以 null 填值）**：
             {
-                "活動名稱": null,
-                "承辦單位": null,
-                "承辦人": null,
-                "承辦人_email": null,
-                "參與對象": null,
-                "講師": null,
-                "地點": null,
-                "報名時間": null,
-                "場次時間": null,
-                "時數標籤": null,
-                "學習護照時數標籤碼": null,
-                "活動網址": null
+                "event_name": null,
+                "organizer": null,
+                "contact_person": null,
+                "contact_email": null,
+                "target_audience": null,
+                "speaker": null,
+                "location": null,
+                "registration_period": null,
+                "session_time": null,
+                "credit_label": null,
+                "learning_passport_code": null,
+                "event_url": null
             }
             2.**圖片摘要**
             以 1-2 句中文概述海報重點（活動核心、時間、地點）。

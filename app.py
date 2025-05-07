@@ -4,7 +4,7 @@ from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage, ImageMessage
 import datetime
 from utils.database import MySQLManager
-import json,time
+import json,time,re
 import os
 from service.model import Gemini
 from threading import Thread
@@ -116,7 +116,16 @@ def handle_message(event):
             TextSendMessage(text=reply_text)
         )
 
+
 @handler.add(MessageEvent, message=TextMessage)
+
+# ---- SQL 安全轉義小工具 ----
+def esc(val):
+    """None / 空字串 → NULL，其餘字串做簡易轉義並加引號"""
+    if val in (None, "", "null"):
+        return "NULL"
+    return "'" + str(val).replace("\\", "\\\\").replace("'", "''") + "'"
+
 def handle_message(event):
     user_input = event.message.text
     uid = "'"+event.source.user_id+"'"
@@ -149,8 +158,38 @@ def handle_image(event):
     print(f"📥 圖片已儲存: {file_path}")
 
     # 使用 Gemini 多模態模型分析圖片
-    description = gm.analyze_image(file_path)
+    description= gm.analyze_image(file_path)
+    description = description.split("\n", 1)[1]      # 去掉第一行 ```json
+    description = description.rsplit("```", 1)[0]    # 去尾端 ```
     print(f"🔍 圖片分析結果: {description}")
+
+    # 寫入MYSQL
+    info = json.loads(description)      
+    meta = info.get("metadata", {})              # dict，可 .get()        # 解析成 dict
+    metadata_json = json.dumps(meta, ensure_ascii=False)
+    table      = "event_info"
+    properties = [
+        "`event_name`", "`organizer`", "`contact_person`", "`contact_email`",
+        "`target_audience`", "`speaker`", "`location`",
+        "`registration_period`", "`session_time`",
+        "`credit_label`", "`learning_passport_code`", "`event_url`"
+    ]
+    input_data = [
+        esc(meta.get("event_name")),
+        esc(meta.get("organizer")),
+        esc(meta.get("contact_person")),
+        esc(meta.get("contact_email")),
+        esc(meta.get("target_audience")),
+        esc(meta.get("speaker")),
+        esc(meta.get("location")),
+        esc(meta.get("registration_period")),
+        esc(meta.get("session_time")),
+        esc(meta.get("credit_label")),
+        esc(meta.get("learning_passport_code")),
+        esc(meta.get("event_url"))
+    ]
+    sql.push(table, input_data, properties)
+
 
     # 回覆使用者
     line_bot_api.reply_message(

@@ -64,6 +64,20 @@
       "created_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
       "last_called_from_memory": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
       "topic_id": "VARCHAR(255)"
+    },
+    "event_info": {
+        "event_name": "VARCHAR(255)",
+        "organizer": "VARCHAR(255)",
+        "contact_person": "VARCHAR(255)",
+        "contact_email": "VARCHAR(255)",
+        "target_audience": "VARCHAR(255)",
+        "speaker": "VARCHAR(255)",
+        "location": "VARCHAR(255)",
+        "registration_period": "VARCHAR(255)",
+        "session_time": "VARCHAR(255)",
+        "credit_label": "VARCHAR(64)",
+        "learning_passport_code": "VARCHAR(64)",
+        "event_url": "VARCHAR(255)"
     }
 
 }
