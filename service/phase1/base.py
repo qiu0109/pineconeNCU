@@ -100,7 +100,7 @@ class FinalPromptGenerator:
 
 class FinalPromptGenerator_flowEngine:
     def __init__(self):
-        self.model = model.GPT4O()
+        self.model = model.Gemini()
 
     def generate_final_prompt(self, user_input: str, main_intent: str, step_name: str, step_content: str, history="None", extra_data="None", check_result="None", ph1_emotion_tone="None", fail_reason=None):
         """
@@ -126,10 +126,9 @@ class FinalPromptGenerator_flowEngine:
         上次檢查未通過的原因：{fail_reason_text}
         """
         messages = [
-            {"role": "system", "content": tone_prompt},
-            {"role": "user", "content": final_prompt}
+            {"role": "user", "parts": [final_prompt]}
         ]
-        phase1_response = self.model.call(messages)
+        phase1_response = self.model.call(messages,system_instruction=tone_prompt)
         return phase1_response
 
 def llm_step_checker(user_input, ai_reply, step_name, step_content, extra_data, history, llm_model=None):
@@ -146,7 +145,7 @@ def llm_step_checker(user_input, ai_reply, step_name, step_content, extra_data, 
     history = history or "None"
 
     if llm_model is None:
-        llm_model = model.GPT4O()
+        llm_model = model.Gemini()
 
     check_prompt = f"""
     你是一個流程監督AI，請判斷下列對話是否已完成指定步驟，或判斷現在是否退出這個步驟較為合適。
@@ -165,10 +164,11 @@ def llm_step_checker(user_input, ai_reply, step_name, step_content, extra_data, 
     print(f"[DEBUG] check_prompt:\n{check_prompt}")
 
     messages = [
-        {"role": "user", "content": check_prompt}
+        {"role": "user", "parts": [check_prompt]}
     ]
 
-    result = llm_model.call(messages, temperature=0.0)
+    result = llm_model.call(messages)
+    print(messages)
     print(f"[DEBUG] LLM 步驟檢查回傳：{result}")  # debug print
 
     lowered = result.strip().lower()

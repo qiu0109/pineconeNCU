@@ -10,7 +10,9 @@
         "head_url": "VARCHAR(255)",
         "last_reply_time": "TIMESTAMP",
         "favor": "FLOAT DEFAULT 30",
-        "hostility": "TINYINT(1) DEFAULT 0"
+        "hostility": "TINYINT(1) DEFAULT 0",
+        "schedule": "JSON",
+        "stage": "VARCHAR(10) DEFAULT 'None'"
     },
     "dialogue": {
         "dialogue_id": "INT PRIMARY KEY AUTO_INCREMENT",
