@@ -167,8 +167,8 @@ def llm_step_checker(user_input, ai_reply, step_name, step_content, extra_data, 
         {"role": "user", "parts": [check_prompt]}
     ]
 
-    result = llm_model.call(messages)
-    print(messages)
+    result = llm_model.call(messages,tone_prompt)
+    #print(messages)
     print(f"[DEBUG] LLM 步驟檢查回傳：{result}")  # debug print
 
     lowered = result.strip().lower()

@@ -17,7 +17,6 @@ class MySQLManager():
         :param rule: str, 排序資料的條件（預設為 None）
         :param size: int, 取出資料的筆數（預設為 All）
         """
-        cursor = self.sql.cursor
 
         properties = ", ".join(properties) if properties else "*"
         
@@ -26,9 +25,7 @@ class MySQLManager():
         if rule is not None: query += f" ORDER BY {rule}"
         
         try:
-            self.sql.execute(query)
-            data = cursor.fetchmany(size) if size else cursor.fetchall()
-            return data if data is not None else []
+            return self.sql.execute(query, fetch=True, size=size) or []
         except Exception as e:
             print(f"查詢數據時發生錯誤: {e}")
             return []

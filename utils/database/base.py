@@ -2,6 +2,7 @@ import os
 import json
 import mysql.connector
 from dotenv import load_dotenv
+from mysql.connector import pooling, Error
 
 load_dotenv()
 
@@ -16,9 +17,16 @@ class MySQL():
 
     # 初始化本機端資料庫
     def __init__(self, reset_database:bool = True):
-        # 與資料庫連結並初始化 
-        self.mydb = self.connect()
-        self.cursor = self.mydb.cursor(buffered=True)
+        # ❶ 建立 **一個** 連線池，大小設成你預估同時會存取 DB 的執行緒數
+        self.pool = pooling.MySQLConnectionPool(
+            pool_name     = "pinecone_pool",
+            pool_size     = 10,
+            host          = os.getenv("MYSQL_HOST"),
+            user          = os.getenv("MYSQL_USER"),
+            password      = os.getenv("MYSQL_PASSWD"),
+            database      = os.getenv("MYSQL_DATABASE"),
+            autocommit    = False,
+        )
 
         # 讀取 JSON 檔案
         with open('utils/database/table.json', 'r', encoding='utf-8') as file:
@@ -33,6 +41,18 @@ class MySQL():
         self.create_database()
         return 
 
+    # ❷ 任何一次 SQL 都用「with self._conn() as cnx」去借新的安全連線
+    def _conn(self):
+        cnx = self.pool.get_connection()
+        cnx.ping(reconnect=True, attempts=3, delay=2)   # 自動補連
+        return cnx
+
+    def execute(self, query, args=None, fetch=False, size=None):
+        with self._conn() as cnx, cnx.cursor(buffered=True) as cur:
+            cur.execute(query, args or ())
+            if fetch:
+                return cur.fetchmany(size) if size else cur.fetchall()
+            cnx.commit()
 
     # 與資料庫連結
     def connect(self):
@@ -54,14 +74,6 @@ class MySQL():
             # 這裡執行手動重連邏輯
             self.connect()
 
-    # 進行操作
-    def execute(self, query):
-        try:
-            self.cursor.execute(query)
-            self.mydb.commit()
-        except mysql.connector.Error as err:
-            print(f"操作表格時發生錯誤: {err}")
-        return
 
 
     # 建立完整資料庫
