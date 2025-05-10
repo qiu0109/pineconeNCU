@@ -29,9 +29,9 @@ class Gemini():
             response = self.model.generate_content(
                 contents = prompt
             )
-            print(response)
+            #print(response)
             candidate = response.candidates[0]
-            print(candidate)
+            #print(candidate)
             reply_text = candidate.content.parts[0].text
             return reply_text
         except Exception as e:

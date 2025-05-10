@@ -125,17 +125,17 @@ class ModuleManager():
         flow_reply, in_flow = self.flow_engine.handle(uid.strip("'"), user_input)
         if in_flow:
             # 將流程引擎生成的回應分割後回傳
-            answer = self.split_message(flow_reply or "")
+            answer = [flow_reply]
             print(f"\n[FlowEngine] answer: 【{answer}】")
 
             # 清理 temporary dialogue 以避免重覆處理
             self.delete_temp_dialogue(uid)
 
             # 把訊息寫入 dialogue 歷史
-            self.add_dialogue(uid, messages, messages_id, answer, reply_id)
+            self.add_dialogue(uid, messages, messages_id, answer, reply_id, reply_tokens)
 
             # 更新摘要 / 記憶 / 好感度
-            user_summary = self.summary_manager.add_message(user_id=uid, role="bot", message=answer, memory=topics)
+            user_summary = self.summary_manager.add_message(user_id=uid, role="bot", message=flow_reply, memory=topics)
             if user_summary is not None:
                 # 做摘要
                 summary = user_summary['summary']
