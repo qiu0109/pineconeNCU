@@ -121,13 +121,14 @@ class FlowEngine:
         step_name = step.get("step", step.get("Topic", ""))
         step_content = step["content"]
         extra = ""
-        if step.get("link") and step["link"] != "[]":
-            if step["link"] == "['event_info']":
-                extra = get_data_by_link_database(self.sql, step["link"])
-            else:
-                rows = get_data_by_link(self.kb, step["link"])
-                if rows:
-                    extra = "\n".join(f"{d['Topic']}: {d['content']}" for d in rows)
+        # if step.get("link") and step["link"] != "[]":
+        #     if step["link"] == "['event_info']":
+        #         extra = get_data_by_link_database(self.sql, step["link"])
+        #     else:
+        #         rows = get_data_by_link(self.kb, step["link"])
+        #         if rows:
+        #             extra = "\n".join(f"{d['Topic']}: {d['content']}" for d in rows)
+        # print("extra:", extra)
 
         # 4) 連續檢查：跳過所有已完成的步驟
         final_reply = None
@@ -136,6 +137,16 @@ class FlowEngine:
             step = s.steps[s.step_index]
             step_name = step.get("step", step.get("Topic", ""))
             step_content = step["content"]
+            if step.get("link") and step["link"] != "[]":
+                if step["link"] == "['event_info']":
+                    extra = get_data_by_link_database(self.sql, step["link"])
+                else:
+                    rows = get_data_by_link(self.kb, step["link"])
+                    if rows:
+                        extra = "\n".join(f"{d['Topic']}: {d['content']}" for d in rows)
+            print("extra:", extra)
+            print("step:",s.step_index)
+
             done, reason = llm_step_checker(
                 user_input=user_input,
                 ai_reply="",
@@ -144,15 +155,24 @@ class FlowEngine:
                 extra_data=extra or "None",
                 history=" | ".join(s.history) or "None",
             )
+            
             if done:
-                s.step_index += 1
                 # 如果跳完最後一步，流程結束
-                if s.step_index >= len(s.steps):
-                    final_reply = "流程完成囉！還有其他需要我幫忙的嗎？"
-                    in_flow = False
+                if s.step_index >= len(s.steps)-1:
+                    final_reply = self.generator.generate_final_prompt(
+                        user_input=user_input,
+                        main_intent=s.current_intent,
+                        step_name=step_name,
+                        step_content=step_content,
+                        history=" | ".join(s.history) or "None",
+                        extra_data=extra or "None",
+                        fail_reason=reason,
+                    )
+                    in_flow = True
                     self._save_schedule_to_db(uid, None, None)
                     self.sessions.pop(uid, None)
                     break
+                s.step_index += 1
                 continue
             else:
                 final_reply = self.generator.generate_final_prompt(
