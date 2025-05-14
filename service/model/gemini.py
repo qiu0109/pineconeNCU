@@ -1,4 +1,5 @@
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 import os
 from PIL import Image
 
@@ -11,7 +12,7 @@ class Gemini():
         google_api=os.getenv("GOOGLE_API_KEY")
 
         # 設定 API Key
-        genai.configure(api_key=google_api)
+        self.client = genai.Client(api_key=google_api)
 
         # 指定要使用的模型（示例名稱，實際需使用平台提供的模型ID）
         self.MODEL_NAME = "gemini-2.0-flash"
@@ -24,19 +25,27 @@ class Gemini():
         :param prompt: list[dict], 例如：[{"role":"user", "parts":["text"]}, ...]
         """
         try:
-            self.model = genai.GenerativeModel(
-                model_name = self.MODEL_NAME,
-                system_instruction = system_instruction
-            )
             if search_web:
-                response = self.model.generate_content(
-                    contents = prompt,
-                    tools="google_search_retrieval"
+                response = self.client.models.generate_content(
+                    model=self.MODEL_NAME,
+                    contents=prompt,
+                    config=types.GenerateContentConfig(
+                        tools=[types.Tool(
+                            google_search_retrieval=types.GoogleSearchRetrieval()
+                        )],
+                        system_instruction=system_instruction
+                    )
                 )
+                print(response)
             else:
-                response = self.model.generate_content(
-                    contents = prompt
+                response = self.client.models.generate_content(
+                    model=self.MODEL_NAME,
+                    contents=prompt,
+                    config=types.GenerateContentConfig(
+                        system_instruction=system_instruction
+                    )
                 )
+                print(response)
             #print(response)
             candidate = response.candidates[0]
             #print(candidate)
