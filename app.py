@@ -208,7 +208,6 @@ def check_mysql_periodically():
         while True:
             try:
                 sql.sql.reconnect()
-
                 # 定期從 MySQL 中查詢需要發送的數據
                 table = "dialogue"
                 rule=" reply_time ASC"

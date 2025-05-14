@@ -50,7 +50,7 @@ def get_data_by_link(kb, link):
     return data_rows 
 
 def get_data_by_link_database(sql, link = 'event_info'):
-    table = link
+    table = link.strip("[").strip("]").strip("'")
     properties = ["event_name", "organizer", "contact_person", "contact_email", "target_audience", "speaker",
                  "location", "registration_period", "session_time", "credit_label", "learning_passport_code", "event_url"]
     rows = sql.fetch(table,properties)

@@ -190,6 +190,20 @@ class FlowEngine:
                     {"intent": s.current_intent, "steps": s.steps},
                     s.step_index,
                 )
+                done, reason = llm_step_checker(
+                    user_input=user_input,
+                    ai_reply="",
+                    step_name=step_name,
+                    step_content=step_content,
+                    extra_data=extra or "None",
+                    history=" | ".join(s.history) or "None",
+                )
+                if done:
+                    s.step_index += 1
+                    # 如果跳完最後一步，流程結束
+                    if s.step_index >= len(s.steps)-1:
+                        self._save_schedule_to_db(uid, None, None)
+                        self.sessions.pop(uid, None)
                 break
 
         return final_reply, in_flow
