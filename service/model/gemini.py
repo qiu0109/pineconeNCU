@@ -4,6 +4,8 @@ from PIL import Image
 
 
 
+
+
 class Gemini():
     def __init__(self):
         google_api=os.getenv("GOOGLE_API_KEY")
@@ -17,7 +19,7 @@ class Gemini():
 
 
     # 呼叫 gpt 模型協助生成回復
-    def call(self, prompt:list[dict], system_instruction = ''):
+    def call(self, prompt:list[dict], system_instruction = '', search_web = False):
         """
         :param prompt: list[dict], 例如：[{"role":"user", "parts":["text"]}, ...]
         """
@@ -26,9 +28,15 @@ class Gemini():
                 model_name = self.MODEL_NAME,
                 system_instruction = system_instruction
             )
-            response = self.model.generate_content(
-                contents = prompt
-            )
+            if search_web:
+                response = self.model.generate_content(
+                    contents = prompt,
+                    tools="google_search_retrieval"
+                )
+            else:
+                response = self.model.generate_content(
+                    contents = prompt
+                )
             #print(response)
             candidate = response.candidates[0]
             #print(candidate)
