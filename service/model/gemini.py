@@ -31,7 +31,7 @@ class Gemini():
                     contents=prompt,
                     config=types.GenerateContentConfig(
                         tools=[types.Tool(
-                            google_search_retrieval=types.GoogleSearchRetrieval()
+                            google_search=types.GoogleSearch()
                         )],
                         system_instruction=system_instruction
                     )
