@@ -31,17 +31,27 @@ class Intention():
             return raw
         return re.sub(r"^\s*```(?:json)?\s*|\s*```\s*$", "", raw, flags=re.I)
     
-    def _extract_json(self, raw: str) -> dict:
-        """
-        去掉 ```json code fence，並回傳第一個合法 JSON 物件。
-        取不到就 raise ValueError。
-        """
+    def _extract_json(self, raw: str):
+        #print("raw:",raw)
         raw = self._strip_code_fence(raw)
-        m = re.search(r"\{.*?\}", raw, re.S)
-        if not m:
-            print(raw)
+        
+        start = raw.find("{")
+        end   = raw.rfind("}")
+        if start == -1 or end == -1 or end < start:
             raise ValueError("找不到 JSON 區塊")
-        return json.loads(m.group(0))
+        
+        snippet = raw[start:end+1]          # ← 現在一定是最外層 {...}
+        
+        # 先試正統 JSON
+        try:
+            return json.loads(snippet)
+        except json.JSONDecodeError:
+            # 再退一步吃 Python dict
+            import ast
+            try:
+                return ast.literal_eval(snippet)
+            except Exception as e:
+                raise ValueError(f"兩種解析都失敗：{e}\n--- 原始片段 ---\n{snippet}")
 
 
     # 填入 Rough 表的內容

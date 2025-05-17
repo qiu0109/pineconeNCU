@@ -159,6 +159,7 @@ def handle_image(event):
 
     # 使用 Gemini 多模態模型分析圖片
     description= gm.analyze_image(file_path)
+    print(description)
     description = description.split("\n", 1)[1]      # 去掉第一行 ```json
     description = description.rsplit("```", 1)[0]    # 去尾端 ```
     print(f"🔍 圖片分析結果: {description}")
@@ -230,7 +231,7 @@ def check_mysql_periodically():
                         #line_bot_api.push_message(uid, TextSendMessage(text=f"{message}"))
                         line_bot_api.reply_message(
                             reply_token,
-                            TextSendMessage(text=f"{message.strip('\n')}")
+                            TextSendMessage(text=message.strip('\n'))
                         )
 
                 time.sleep(1)

@@ -20,32 +20,39 @@ class Gemini():
 
 
     # 呼叫 gpt 模型協助生成回復
-    def call(self, prompt:list[dict], system_instruction = '', search_web = False):
+    def call(self, prompt:list[dict], system_instruction = '', search_web = True):
         """
         :param prompt: list[dict], 例如：[{"role":"user", "parts":["text"]}, ...]
         """
         try:
+            #print(prompt)
+            messages = []
+            for m in prompt:
+                role = m.get("role", "user")          # 預設視為 user
+                part_objs = [types.Part(text=p) for p in m.get("parts", [])]
+                messages.append(types.Content(role=role, parts=part_objs))
+            #print(messages)
             if search_web:
                 response = self.client.models.generate_content(
                     model=self.MODEL_NAME,
-                    contents=prompt,
+                    contents=messages,
                     config=types.GenerateContentConfig(
                         tools=[types.Tool(
-                            google_search_retrieval=types.GoogleSearchRetrieval()
+                            google_search=types.GoogleSearchRetrieval()
                         )],
-                        system_instruction=system_instruction
+                        system_instruction=system_instruction+"如果遇到不知道的問題請查詢google"
                     )
                 )
-                print(response)
+                #print(response)
             else:
                 response = self.client.models.generate_content(
                     model=self.MODEL_NAME,
-                    contents=prompt,
+                    contents=messages,
                     config=types.GenerateContentConfig(
                         system_instruction=system_instruction
                     )
                 )
-                print(response)
+                #print(response)
             #print(response)
             candidate = response.candidates[0]
             #print(candidate)
@@ -81,68 +88,65 @@ class Gemini():
 
     def analyze_image(self, image_path: str, system_instruction: str = '') -> str:
         """
-        利用 Gemini 多模態模型分析圖片內容，並回傳文字描述。
-        :param image_path: 本地圖片檔案路徑
-        :param system_instruction: 選填，提供額外上下文或分析指令
+        讀取本地圖片，呼叫 Gemini Vision 取得 JSON + 摘要。
+        :param image_path: 圖片檔案路徑
+        :param system_instruction: （可選）覆寫預設提示
+        :return: Gemini 回傳的文字（JSON + 摘要）
         """
+        default_prompt = (
+            "你是一個「活動海報資訊抽取與摘要助理」。\n"
+            "當使用者上傳含有活動海報的圖片，請根據海報畫面中的文字與版面，完成下列任務並以 JSON 物件回傳結果：\n"
+            "1. **精準擷取下列欄位（若缺漏，請以 null 填值）**：\n"
+            "{\n"
+            '  "event_name": null,\n'
+            '  "organizer": null,\n'
+            '  "contact_person": null,\n'
+            '  "contact_email": null,\n'
+            '  "target_audience": null,\n'
+            '  "speaker": null,\n'
+            '  "location": null,\n'
+            '  "registration_period": null,\n'
+            '  "session_time": null,\n'
+            '  "credit_label": null,\n'
+            '  "learning_passport_code": null,\n'
+            '  "event_url": null\n'
+            "}\n"
+            "2. **圖片摘要**：以 1-2 句中文概述海報重點（活動核心、時間、地點）；勿重複 JSON 欄位值。\n"
+            "3. **格式規範**：\n"
+            '{ "metadata": { … }, "summary": "…" }\n'
+            "所有日期時間保持原格式；僅回傳 JSON，不要額外說明或 markdown。"
+        )
+        sys_prompt = system_instruction or default_prompt
+
         try:
-            # 讀取二進位圖片資料
-            # with open(image_path, 'rb') as img_f:
-            #     image_bytes = img_f.read()
-            default_prompt= '''你是一個 「活動海報資訊抽取與摘要助理」。
-            當使用者上傳含有活動海報的圖片，請根據海報畫面中的文字與版面，完成下列任務並以 JSON 物件 回傳結果：
-            1.**精準擷取下列欄位（若海報缺漏，請以 null 填值）**：
-            {
-                "event_name": null,
-                "organizer": null,
-                "contact_person": null,
-                "contact_email": null,
-                "target_audience": null,
-                "speaker": null,
-                "location": null,
-                "registration_period": null,
-                "session_time": null,
-                "credit_label": null,
-                "learning_passport_code": null,
-                "event_url": null
-            }
-            2.**圖片摘要**
-            以 1-2 句中文概述海報重點（活動核心、時間、地點）。
-            不要重複 JSON 中已列出的欄位值，僅補充整體印象或亮點。
-            格式規範
-            最外層固定回傳一個物件，包含 metadata 與 summary 兩鍵：
-            {
-            "metadata": { ...欄位清單... },
-            "summary": "..."
-            }
-            所有日期時間請保持原格式；若為範圍，用「起—迄」連寫。
-            僅回傳 JSON，不要加入額外說明、標題或 markdown。
-            3.**解析原則**
-            優先以版面上醒目大字判斷「活動名稱」。
-            如有多個時間段，將首段視為主要「場次時間」，其他可用分號 ; 分隔。
-            電子郵件與網址須符合標準格式；若海報將網址縮短或使用 QR Code 而無明文字串，可填 null。
-            若海報包含 QR Code，且能辨識出嵌入的連結，再填入「活動網址」。
-            遵循以上規格，確保輸出可直接被程式解析。'''
+            # ① 準備 Content（文字 + 圖像）
+            with open(image_path, 'rb') as img:
+                img_bytes = img.read()
+                messages = [
+                    types.Content(
+                        role="user",
+                        parts=[
+                            types.Part(text="請依說明抽取資訊並摘要："),
+                            types.Part.from_bytes(
+                                data=img_bytes,
+                                mime_type='image/jpg'
+                            )
+                        ]
+                    )
+                ]
 
-            # 若沒有提供 system_instruction，使用預設提示
-            system_prompt = system_instruction or default_prompt
-
-            self.model = genai.GenerativeModel(
-                model_name = self.MODEL_NAME,
-                system_instruction = system_prompt
+            # ② 呼叫 Vision 模型
+            resp = self.client.models.generate_content(
+                model=self.MODEL_NAME,
+                contents=messages,
+                config=types.GenerateContentConfig(
+                    system_instruction=sys_prompt
+                )
             )
 
-            with Image.open(image_path) as img:
-                response = self.model.generate_content(
-                    [
-                        img                  # Part 2：PIL.Image 物件即可
-                    ]
-                )
+            reply_text = resp.text          # SDK 0.8 可直接用 .text
+            return reply_text
 
-            print(response.text)          # Gemini 會依 system/user prompt 輸出
-
-            # 呼叫通用的 call() 進行多模態分析
-            return response.text
         except Exception as e:
             return f"[Error] gemini analyze_image 失敗: {e}"
 
