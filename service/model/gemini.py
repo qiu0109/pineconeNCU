@@ -38,7 +38,7 @@ class Gemini():
                     contents=messages,
                     config=types.GenerateContentConfig(
                         tools=[types.Tool(
-                            google_search=types.GoogleSearchRetrieval()
+                            google_search=types.GoogleSearch()
                         )],
                         system_instruction=system_instruction+"如果遇到不知道的問題請查詢google"
                     )
