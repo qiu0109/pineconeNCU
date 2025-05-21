@@ -190,12 +190,26 @@ def handle_image(event):
         esc(meta.get("event_url"))
     ]
     sql.push(table, input_data, properties)
+    reply_data = [
+        "活動名稱: "+esc(meta.get("event_name")),
+        "主辦機構: "+esc(meta.get("organizer")),
+        "聯絡人: "+esc(meta.get("contact_person")),
+        "聯絡email: "+esc(meta.get("contact_email")),
+        "參加者: "+esc(meta.get("target_audience")),
+        "講師: "+esc(meta.get("speaker")),
+        "地點: "+esc(meta.get("location")),
+        "報名時間: "+esc(meta.get("registration_period")),
+        "活動時間: "+esc(meta.get("session_time")),
+        "時數標籤: "+esc(meta.get("credit_label")),
+        "學習護照: "+esc(meta.get("learning_passport_code")),
+        "活動連結: "+esc(meta.get("event_url"))
+    ]
 
 
     # 回覆使用者
     line_bot_api.reply_message(
         event.reply_token,
-        TextSendMessage(text=f"圖片分析結果：{description}")
+        TextSendMessage(text=f"活動資訊已儲存\n{'\n'.join(reply_data)}")
     )
 
     if os.path.exists(file_path):

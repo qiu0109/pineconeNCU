@@ -15,7 +15,7 @@ class Gemini():
         self.client = genai.Client(api_key=google_api)
 
         # 指定要使用的模型（示例名稱，實際需使用平台提供的模型ID）
-        self.MODEL_NAME = "gemini-2.0-flash"
+        self.MODEL_NAME = "gemini-2.5-pro-preview-05-06"
        
 
 
@@ -129,7 +129,7 @@ class Gemini():
                             types.Part(text="請依說明抽取資訊並摘要："),
                             types.Part.from_bytes(
                                 data=img_bytes,
-                                mime_type='image/jpg'
+                                mime_type='image/jpeg'
                             )
                         ]
                     )
