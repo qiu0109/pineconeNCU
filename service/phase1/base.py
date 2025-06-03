@@ -129,7 +129,7 @@ class FinalPromptGenerator_flowEngine:
         messages = [
             {"role": "user", "parts": [final_prompt]}
         ]
-        phase1_response = self.model.call(messages,system_instruction=tone_prompt)
+        phase1_response = self.model.call(messages, system_instruction=tone_prompt, search_web=True)
         return phase1_response
 
 def llm_step_checker(user_input, ai_reply, step_name, step_content, extra_data, history, llm_model=None):

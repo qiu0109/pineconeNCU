@@ -16,11 +16,12 @@ class Gemini():
 
         # 指定要使用的模型（示例名稱，實際需使用平台提供的模型ID）
         self.MODEL_NAME = "gemini-2.5-pro-preview-05-06"
+        self.FAST_MODEL = "gemini-2.5-flash-preview-05-20"
        
 
 
     # 呼叫 gpt 模型協助生成回復
-    def call(self, prompt:list[dict], system_instruction = '', search_web = True):
+    def call(self, prompt:list[dict], system_instruction = '', search_web = False):
         """
         :param prompt: list[dict], 例如：[{"role":"user", "parts":["text"]}, ...]
         """
@@ -46,7 +47,7 @@ class Gemini():
                 #print(response)
             else:
                 response = self.client.models.generate_content(
-                    model=self.MODEL_NAME,
+                    model=self.FAST_MODEL,
                     contents=messages,
                     config=types.GenerateContentConfig(
                         system_instruction=system_instruction
