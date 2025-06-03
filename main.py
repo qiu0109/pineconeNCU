@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 import utils.random_reply as rr
 import service.phase1 as p1
 import time
+import threading
 from service.flow_engine.base import FlowEngine
 
 # 保留摘要與記憶功能
@@ -78,7 +79,9 @@ class ModuleManager():
                 print(f"用戶【{uid_str}】的 Buffer 時間結束，開始處理訊息...")
                 del self.last_received_times[uid_str]
                 self.pending_users.remove(uid_str)
-                self.process_user_message(uid_str)
+                # 在新線程中處理用戶訊息
+                thread = threading.Thread(target=self.process_user_message, args=(uid_str,))
+                thread.start()
 
             time.sleep(1)
 

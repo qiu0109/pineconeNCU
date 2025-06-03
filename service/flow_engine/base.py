@@ -66,7 +66,7 @@ class FlowEngine:
                 user_input=user_input,
                 ai_reply="",
                 step_name="退出詢問",
-                step_content="偵測使用者是否想結束/取消目前流程。",
+                step_content="偵測使用者是否想結束/取消目前流程，除非使用者在最近的發言中強烈表示要換一個話題的時候輸出EXIT_FLOW，否則流程繼續。",
                 extra_data="None",
                 history=" | ".join(self.sessions[uid].history) or "None",
             )
