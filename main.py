@@ -79,19 +79,19 @@ class ModuleManager():
                 print(f"用戶【{uid_str}】的 Buffer 時間結束，開始處理訊息...")
                 del self.last_received_times[uid_str]
                 self.pending_users.remove(uid_str)
+                # 取得訊息
+                messages, messages_id, reply_id, msg_timestamps, reply_tokens = self.get_message(uid_str)
+                history = self.get_history(uid_str)
+                reply_message = self.get_reply_message(uid_str, reply_id)
                 # 在新線程中處理用戶訊息
-                thread = threading.Thread(target=self.process_user_message, args=(uid_str,))
+                thread = threading.Thread(target=self.process_user_message, args=(uid_str, messages, messages_id, reply_id, 
+                                                                                  reply_tokens, history, reply_message, ))
                 thread.start()
 
             time.sleep(1)
 
 
-    def process_user_message(self, uid):
-        # 取得訊息
-        messages, messages_id, reply_id, msg_timestamps, reply_tokens = self.get_message(uid)
-        history = self.get_history(uid)
-        reply_message = self.get_reply_message(uid, reply_id)
-
+    def process_user_message(self, uid, messages, messages_id, reply_id, reply_tokens, history, reply_message):
 
         user_input = ' '.join(messages)
         print(f"\nmessage:【{user_input}】\nhistory:【{history}】\nreply:【{reply_message}】")
