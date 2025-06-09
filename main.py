@@ -83,6 +83,8 @@ class ModuleManager():
                 messages, messages_id, reply_id, msg_timestamps, reply_tokens = self.get_message(uid_str)
                 history = self.get_history(uid_str)
                 reply_message = self.get_reply_message(uid_str, reply_id)
+                #刪除temp_dialogue
+                self.delete_temp_dialogue(uid_str)
                 # 在新線程中處理用戶訊息
                 thread = threading.Thread(target=self.process_user_message, args=(uid_str, messages, messages_id, reply_id, 
                                                                                   reply_tokens, history, reply_message, ))
@@ -168,7 +170,6 @@ class ModuleManager():
             self.memory_manager.store_memory(user_id=uid, text=sum2, importance=0.5, frequency=1 )
 
         # 新增到 dialogue
-        self.delete_temp_dialogue(uid)
         self.add_dialogue(uid, messages, messages_id, answer, reply_id, reply_tokens)
 
         print("\n處理完畢繼續接受訊息...")
